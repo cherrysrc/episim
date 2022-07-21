@@ -4,6 +4,7 @@ use quadtree::Positioned;
 use rand_distr::Normal;
 
 mod config;
+mod statistics;
 mod entity;
 mod simulator;
 mod unsafe_array;

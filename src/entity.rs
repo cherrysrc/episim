@@ -114,6 +114,10 @@ impl Entity {
         self.age
     }
 
+    pub fn health(&self) -> &InfectionStatus {
+        &self.health
+    }
+
     pub fn update_status(&mut self) {
         match self.health {
             InfectionStatus::Infected(time_remaining) => {

@@ -2,7 +2,7 @@ use std::{time::Instant, sync::Arc};
 
 use quadtree::{Quadtree, Rectangle, Positioned};
 
-use crate::{entity::Entity, unsafe_array::UnsafeArray, CONFIG};
+use crate::{entity::Entity, unsafe_array::UnsafeArray, CONFIG, statistics::DataFrame};
 
 use crossbeam::thread;
 
@@ -95,12 +95,25 @@ impl Simulator {
     }
 
     pub fn run(&mut self, debug: bool) {
+        let mut dataframe = DataFrame::new(CONFIG.core.population_size as usize);
+        dataframe.push_data(self);
+
         for _ in 0..CONFIG.core.time_limit {
             self.step();
 
-            if debug {
-                println!("Time: {}", self.time);
-            }
+            dataframe.push_data(self);
         }
+
+        if debug {
+            println!("{}", dataframe);
+        }
+    }
+
+    pub fn current_time(&self) -> u32 {
+        self.time
+    }
+
+    pub fn population(&self) -> &UnsafeArray<Entity> {
+        &self.population
     }
 }
