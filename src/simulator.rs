@@ -94,11 +94,28 @@ impl Simulator {
         self.time += 1;
     }
 
-    pub fn run(&mut self, debug: bool) {
+    pub fn run(&mut self, debug: bool, show_progress: bool) {
         let mut dataframe = DataFrame::new(CONFIG.core.population_size as usize);
         dataframe.push_data(self);
 
-        for _ in 0..CONFIG.core.time_limit {
+        for i in 0..CONFIG.core.time_limit {
+            if show_progress {
+                let progress = i as f32 / CONFIG.core.time_limit as f32 * 100.0;
+
+                print!("[");
+                for _ in 0..((progress / 10.0) as u32) {
+                    print!("=");
+                }
+                
+                for _ in ((progress / 10.0) as u32)..10 {
+                    print!(" ");
+                }
+                print!("] ");
+
+                print!("{:.2} %", progress);
+                print!("\r");
+            }
+            
             self.step();
 
             dataframe.push_data(self);

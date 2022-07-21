@@ -26,7 +26,7 @@ lazy_static! {
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut simulator = simulator::Simulator::new(num_cpus::get() as u32);
 
-    simulator.run(true);
+    simulator.run(true, true);
 
     Ok(())
 }
