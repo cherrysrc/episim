@@ -43,15 +43,14 @@ impl Simulator {
         self.frame_timer = Instant::now();
 
         let mut qtree = Quadtree::new(
-            0.0,
-            0.0,
+            CONFIG.core.dimensions.0 as f32 * 0.5,
+            CONFIG.core.dimensions.1 as f32 * 0.5,
             CONFIG.core.dimensions.0 as f32,
             CONFIG.core.dimensions.1 as f32,
         );
 
         let p = self.population.clone();
-        let g = p.get();
-        for entity in g {
+        for entity in p.get() {
             // If this fails, it means that our entity and area generation is wrong
             qtree.insert(entity).unwrap();
         }
@@ -96,6 +95,10 @@ impl Simulator {
             for handle in thread_handles {
                 handle.join().unwrap();
             }
+
+            for entity in self.population.get_mut() {
+                entity.update_movement();
+            }
         })
         .unwrap();
 
@@ -121,6 +124,10 @@ impl Simulator {
         if debug {
             println!("{}", dataframe);
         }
+    }
+
+    pub fn done(&self) -> bool {
+        self.time >= CONFIG.core.time_limit
     }
 
     pub fn current_time(&self) -> u32 {

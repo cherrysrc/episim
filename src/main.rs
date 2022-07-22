@@ -1,9 +1,11 @@
 use config::Config;
+use graphics::Renderer;
 use lazy_static::lazy_static;
 use quadtree::Positioned;
 use rand_distr::Normal;
 
 mod config;
+mod graphics;
 mod entity;
 mod progress_bar;
 mod simulator;
@@ -24,9 +26,11 @@ lazy_static! {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut simulator = simulator::Simulator::new(num_cpus::get() as u32);
+    let simulator = simulator::Simulator::new(num_cpus::get() as u32);
 
-    simulator.run(true, true);
+    let mut renderer = graphics::SDL::new(simulator);
+
+    renderer.run(true, true);
 
     Ok(())
 }

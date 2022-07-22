@@ -79,6 +79,24 @@ impl Entity {
         self.position += self.velocity;
         self.velocity += self.acceleration;
         self.acceleration *= 0.0;
+
+        self.check_boundaries();
+    }
+
+    // Check if the entity is outside the boundaries.
+    // Reverse the velocity if it is.
+    fn check_boundaries(&mut self) {
+        if self.position.x < 0.0 {
+            self.velocity.x *= -1.0;
+        } else if self.position.x >= CONFIG.core.dimensions.0 as f32 {
+            self.velocity.x *= -1.0;
+        }
+
+        if self.position.y < 0.0 {
+            self.velocity.y *= -1.0;
+        } else if self.position.y >= CONFIG.core.dimensions.1 as f32 {
+            self.velocity.y *= -1.0;
+        }
     }
 
     pub fn apply_force(&mut self, force: Vector2<f32>) {
