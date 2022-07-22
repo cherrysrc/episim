@@ -1,5 +1,5 @@
 use rand::prelude::StdRng;
-use rand_distr::{Normal, Distribution};
+use rand_distr::{Distribution, Normal};
 
 use crate::entity::Entity;
 
@@ -27,7 +27,7 @@ impl Config {
         age_distribution: Normal<f32>,
     ) -> Result<Config, Box<dyn std::error::Error>> {
         let core = ConfigCore::load(path)?;
-        
+
         Ok(Config {
             survival_chance,
             infection_chance,

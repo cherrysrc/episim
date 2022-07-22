@@ -1,8 +1,11 @@
-use std::{time::Instant, sync::Arc};
+use std::{sync::Arc, time::Instant};
 
-use quadtree::{Quadtree, Rectangle, Positioned};
+use quadtree::{Positioned, Quadtree, Rectangle};
 
-use crate::{entity::Entity, unsafe_array::UnsafeArray, CONFIG, statistics::DataFrame};
+use crate::{
+    entity::Entity, progress_bar::print_progress, statistics::DataFrame, unsafe_array::UnsafeArray,
+    CONFIG,
+};
 
 use crossbeam::thread;
 
@@ -22,7 +25,7 @@ impl Simulator {
         let population = (0..CONFIG.core.population_size)
             .map(|_| Entity::new())
             .collect();
-        
+
         let entities_per_thread = CONFIG.core.population_size / threads;
 
         Simulator {
@@ -40,8 +43,10 @@ impl Simulator {
         self.frame_timer = Instant::now();
 
         let mut qtree = Quadtree::new(
-            0.0, 0.0, 
-            CONFIG.core.dimensions.0 as f32, CONFIG.core.dimensions.1 as f32
+            0.0,
+            0.0,
+            CONFIG.core.dimensions.0 as f32,
+            CONFIG.core.dimensions.1 as f32,
         );
 
         let p = self.population.clone();
@@ -57,24 +62,26 @@ impl Simulator {
             for thread_index in 0..self.threads {
                 let arr = self.population.clone();
                 let q_ref = &qtree;
-                
+
                 let start_index = thread_index * self.entities_per_thread;
                 let end_index = (thread_index + 1) * self.entities_per_thread;
-    
+
                 let infection_radius = CONFIG.core.infection_radius as f32;
                 let max_vel = CONFIG.core.max_velocity;
                 let delta_time = self.delta_time.clone();
-    
+
                 let handle = scope.spawn(move |_| {
                     for entity_index in start_index..end_index {
                         let entity = arr.get_at_mut(entity_index as usize);
                         let pos = *entity.position();
-    
+
                         let range = q_ref.query(&Rectangle::new(
-                            pos.x, pos.y, 
-                            infection_radius, infection_radius)
-                        );
-                        
+                            pos.x,
+                            pos.y,
+                            infection_radius,
+                            infection_radius,
+                        ));
+
                         for other in range {
                             let mut diff = pos - *other.position();
                             diff.clamp_mag(max_vel);
@@ -82,14 +89,15 @@ impl Simulator {
                         }
                     }
                 });
-    
+
                 thread_handles.push(handle);
             }
-    
+
             for handle in thread_handles {
                 handle.join().unwrap();
             }
-        }).unwrap();
+        })
+        .unwrap();
 
         self.time += 1;
     }
@@ -101,21 +109,10 @@ impl Simulator {
         for i in 0..CONFIG.core.time_limit {
             if show_progress {
                 let progress = i as f32 / CONFIG.core.time_limit as f32 * 100.0;
-
-                print!("[");
-                for _ in 0..((progress / 10.0) as u32) {
-                    print!("=");
-                }
-                
-                for _ in ((progress / 10.0) as u32)..10 {
-                    print!(" ");
-                }
-                print!("] ");
-
-                print!("{:.2} %", progress);
+                print_progress(progress);
                 print!("\r");
             }
-            
+
             self.step();
 
             dataframe.push_data(self);

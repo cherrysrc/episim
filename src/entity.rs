@@ -7,22 +7,22 @@ use crate::CONFIG;
 #[derive(PartialEq)]
 pub enum InfectionStatus {
     Susceptible,
-    Infected(u32),  // number of days the entity will remain infected. The entity will either recover or die.
+    Infected(u32), // number of days the entity will remain infected. The entity will either recover or die.
     Recovered(u32), // number of days the entity will remain recovered (cannot be infected again). The entity will be susceptible again if this counter reaches 0.
-    Dead
+    Dead,
 }
 
 pub struct Entity {
-    position: Vector2<f32>,     // Used for calculating entity movement.
+    position: Vector2<f32>, // Used for calculating entity movement.
     velocity: Vector2<f32>,
     acceleration: Vector2<f32>,
 
     health: InfectionStatus,
     hospitalized: bool,
-    mobile: bool,               // True if the entity can move (Neither dead, nor in Hospital). False if it is immobile.
+    mobile: bool, // True if the entity can move (Neither dead, nor in Hospital). False if it is immobile.
 
     age: u8,
-    survival_chance: f32,       // Chance the entity will survive an infection (move to the recovered status). Based on the age of the entity.
+    survival_chance: f32, // Chance the entity will survive an infection (move to the recovered status). Based on the age of the entity.
 
     rng: StdRng,
 }
@@ -132,7 +132,7 @@ impl Entity {
                 } else {
                     self.health = InfectionStatus::Infected(time_remaining - 1);
                 }
-            },
+            }
             InfectionStatus::Recovered(time_remaining) => {
                 if time_remaining <= 0 {
                     self.health = InfectionStatus::Susceptible;
@@ -141,8 +141,8 @@ impl Entity {
                 } else {
                     self.health = InfectionStatus::Recovered(time_remaining - 1);
                 }
-            },
-            _ => {},
+            }
+            _ => {}
         }
     }
 }
