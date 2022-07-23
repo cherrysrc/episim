@@ -6,11 +6,21 @@ use rusty_gl::{
 };
 
 use crate::{
-    entity::Entity, progress_bar::print_progress, simulator::Simulator, statistics::DataFrame,
+    entity::{Entity, InfectionStatus}, progress_bar::print_progress, simulator::Simulator, statistics::DataFrame,
     CONFIG,
 };
 
 use super::renderer::Renderer;
+
+// Function to map a health status to a color.
+fn health_to_color(health: &InfectionStatus) -> [f32; 3] {
+    match health {
+        InfectionStatus::Susceptible => [1.0, 1.0, 1.0],
+        InfectionStatus::Infected(_) => [1.0, 0.0, 0.0],
+        InfectionStatus::Recovered(_) => [0.0, 1.0, 0.0],
+        InfectionStatus::Dead => [0.1, 0.1, 0.1],
+    }
+}
 
 /// Implement a sdl rendering backend.
 pub struct SDL {
@@ -30,7 +40,7 @@ fn entity_to_vertex(entity: &Entity) -> Vertex {
     
     Vertex::new(
         [mapped_x, mapped_y, 0.0].into(),
-        [1.0, 1.0, 1.0].into(),
+        health_to_color(entity.health()).into(),
         [0.0, 0.0].into(),
     )
 }
