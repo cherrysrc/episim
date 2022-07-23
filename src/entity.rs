@@ -75,7 +75,9 @@ impl Entity {
     }
 
     /// Simple model for force based movement.
+    /// Maximum velocity is limited to CONFIG.core.max_velocity.
     pub fn update_movement(&mut self) {
+        self.velocity.clamp_mag(CONFIG.core.max_velocity);
         self.position += self.velocity;
         self.velocity += self.acceleration;
         self.acceleration *= 0.0;
@@ -136,6 +138,8 @@ impl Entity {
         &self.health
     }
 
+    /// Performs the transition between
+    /// the existing epidemic model groups.
     pub fn update_status(&mut self) {
         match self.health {
             InfectionStatus::Infected(time_remaining) => {

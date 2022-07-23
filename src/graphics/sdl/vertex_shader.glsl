@@ -1,3 +1,4 @@
+// Simple default vertex shader to display entities
 #version 430
 layout (location = 0) in vec3 vPos;
 layout (location = 1) in vec3 vColor;

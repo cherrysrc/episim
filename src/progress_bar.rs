@@ -1,4 +1,4 @@
-
+/// Helper function to create a progress bar.
 pub fn print_progress(progress: f32) {
     print!("[");
     for _ in 0..((progress / 10.0) as u32) {

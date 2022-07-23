@@ -1,5 +1,6 @@
 use std::fmt::Display;
 
+/// A data point is a all the given statistical information for a single simulation time step.
 pub struct DataPoint {
     timestamp: u32,
     susceptible: u32,

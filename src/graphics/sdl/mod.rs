@@ -12,12 +12,12 @@ use crate::{
 
 use super::renderer::Renderer;
 
+/// Implement a sdl rendering backend.
 pub struct SDL {
     pub simulator: Simulator,
 }
 
 // TODO implement this remap functionality in the rustyGL crate
-
 fn map(x: f32, in_min: f32, in_max: f32, out_min: f32, out_max: f32) -> f32 {
     (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
 }

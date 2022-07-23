@@ -38,6 +38,7 @@ impl Simulator {
         }
     }
 
+    /// Performs a single simulation time step.
     pub fn step(&mut self) {
         self.delta_time = self.frame_timer.elapsed().as_secs_f32();
         self.frame_timer = Instant::now();
@@ -66,7 +67,6 @@ impl Simulator {
                 let end_index = (thread_index + 1) * self.entities_per_thread;
 
                 let infection_radius = CONFIG.core.infection_radius as f32;
-                let max_vel = CONFIG.core.max_velocity;
                 let delta_time = self.delta_time.clone();
 
                 let handle = scope.spawn(move |_| {
@@ -82,9 +82,8 @@ impl Simulator {
                         ));
 
                         for other in range {
-                            let mut diff = pos - *other.position();
-                            diff.clamp_mag(max_vel);
-                            entity.apply_force(diff * delta_time);
+                            let diff = pos - *other.position();
+                            entity.apply_force(diff * 0.05 * delta_time);
                         }
                     }
                 });
@@ -96,8 +95,24 @@ impl Simulator {
                 handle.join().unwrap();
             }
 
-            for entity in self.population.get_mut() {
-                entity.update_movement();
+            let mut thread_handles = Vec::new();
+            for thread_index in 0..self.threads {
+                let arr = self.population.clone();
+
+                let start_index = thread_index * self.entities_per_thread;
+                let end_index = (thread_index + 1) * self.entities_per_thread;
+
+                let handle = scope.spawn(move |_| {
+                    for i in start_index..end_index {
+                        let entity = arr.get_at_mut(i as usize);
+                        entity.update_movement();
+                    }
+                });
+                thread_handles.push(handle);
+            }
+
+            for handle in thread_handles {
+                handle.join().unwrap();
             }
         })
         .unwrap();
@@ -105,6 +120,8 @@ impl Simulator {
         self.time += 1;
     }
 
+    /// Runs the entire simulation.
+    /// Use this if you dont want/need a visalization.
     pub fn run(&mut self, debug: bool, show_progress: bool) {
         let mut dataframe = DataFrame::new(CONFIG.core.population_size as usize);
         dataframe.push_data(self);

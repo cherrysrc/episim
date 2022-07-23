@@ -4,6 +4,7 @@ pub use crate::simulator::Simulator;
 
 use super::DataPoint;
 
+/// DataFrame tracks/collects all the data points for a simulation.
 pub struct DataFrame {
     datapoints: Vec<DataPoint>,
 }
