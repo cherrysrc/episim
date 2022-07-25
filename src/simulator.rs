@@ -4,7 +4,7 @@ use crossbeam::thread;
 use quadtree::{Positioned, Quadtree, Rectangle};
 
 use crate::{
-    entity::Entity, progress_bar::print_progress, statistics::DataFrame, unsafe_array::UnsafeArray,
+    entity::{Entity, InfectionStatus}, progress_bar::print_progress, statistics::DataFrame, unsafe_array::UnsafeArray,
     CONFIG,
 };
 
@@ -91,13 +91,25 @@ impl Simulator {
                 CONFIG.core.infection_radius as f32,
             ));
 
+            // Apply repulsion force, simulates distancing from other entities
             for other in range {
                 let diff = pos - *other.position();
                 entity.apply_force(diff * 0.05 * self.delta_time);
+
+                // Only check if other entity is infected and entity itself is susceptible
+                match (other.status(), entity.status()) {
+                    (InfectionStatus::Infected(_), InfectionStatus::Susceptible) => {
+                        if entity.rand() > (CONFIG.infection_chance)(other, entity) {
+                            entity.infect();
+                        }
+                    },
+                    _ => {}
+                }
             }
         });
 
         self.for_each_entity(&|entity: &mut Entity| {
+            entity.update_status();
             entity.update_movement();
         });
 

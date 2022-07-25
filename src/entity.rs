@@ -138,6 +138,10 @@ impl Entity {
         &self.health
     }
 
+    pub fn rand(&mut self) -> f32 {
+        self.rng.gen::<f32>()
+    }
+
     /// Performs the transition between
     /// the existing epidemic model groups.
     pub fn update_status(&mut self) {
