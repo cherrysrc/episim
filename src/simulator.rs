@@ -1,13 +1,12 @@
 use std::{sync::Arc, time::Instant};
 
+use crossbeam::thread;
 use quadtree::{Positioned, Quadtree, Rectangle};
 
 use crate::{
     entity::Entity, progress_bar::print_progress, statistics::DataFrame, unsafe_array::UnsafeArray,
     CONFIG,
 };
-
-use crossbeam::thread;
 
 pub struct Simulator {
     population: Arc<UnsafeArray<Entity>>,
@@ -38,6 +37,33 @@ impl Simulator {
         }
     }
 
+    /// Helper function for iterating over the population in parallel.
+    fn for_each_entity(&self, f: &(impl Fn(&mut Entity) + Send + Sync)) {
+        thread::scope(|scope| {
+            let mut thread_handles = Vec::new();
+
+            for thread_index in 0..self.threads {
+                let population = self.population.clone();
+
+                let handle = scope.spawn(move |_| {
+                    let start_index = thread_index * self.entities_per_thread;
+                    let end_index = (thread_index + 1) * self.entities_per_thread;
+
+                    for i in start_index..end_index {
+                        f(population.get_at_mut(i as usize));
+                    }
+                });
+
+                thread_handles.push(handle);
+            }
+
+            for handle in thread_handles {
+                handle.join().unwrap();
+            }
+        })
+        .unwrap();
+    }
+
     /// Performs a single simulation time step.
     pub fn step(&mut self) {
         self.delta_time = self.frame_timer.elapsed().as_secs_f32();
@@ -56,66 +82,24 @@ impl Simulator {
             qtree.insert(entity).unwrap();
         }
 
-        thread::scope(|scope| {
-            let mut thread_handles = Vec::new();
+        self.for_each_entity(&|entity: &mut Entity| {
+            let pos = *entity.position();
+            let range = qtree.query(&Rectangle::new(
+                pos.x,
+                pos.y,
+                CONFIG.core.infection_radius as f32,
+                CONFIG.core.infection_radius as f32,
+            ));
 
-            for thread_index in 0..self.threads {
-                let arr = self.population.clone();
-                let q_ref = &qtree;
-
-                let start_index = thread_index * self.entities_per_thread;
-                let end_index = (thread_index + 1) * self.entities_per_thread;
-
-                let infection_radius = CONFIG.core.infection_radius as f32;
-                let delta_time = self.delta_time.clone();
-
-                let handle = scope.spawn(move |_| {
-                    for entity_index in start_index..end_index {
-                        let entity = arr.get_at_mut(entity_index as usize);
-                        let pos = *entity.position();
-
-                        let range = q_ref.query(&Rectangle::new(
-                            pos.x,
-                            pos.y,
-                            infection_radius,
-                            infection_radius,
-                        ));
-
-                        for other in range {
-                            let diff = pos - *other.position();
-                            entity.apply_force(diff * 0.05 * delta_time);
-                        }
-                    }
-                });
-
-                thread_handles.push(handle);
+            for other in range {
+                let diff = pos - *other.position();
+                entity.apply_force(diff * 0.05 * self.delta_time);
             }
+        });
 
-            for handle in thread_handles {
-                handle.join().unwrap();
-            }
-
-            let mut thread_handles = Vec::new();
-            for thread_index in 0..self.threads {
-                let arr = self.population.clone();
-
-                let start_index = thread_index * self.entities_per_thread;
-                let end_index = (thread_index + 1) * self.entities_per_thread;
-
-                let handle = scope.spawn(move |_| {
-                    for i in start_index..end_index {
-                        let entity = arr.get_at_mut(i as usize);
-                        entity.update_movement();
-                    }
-                });
-                thread_handles.push(handle);
-            }
-
-            for handle in thread_handles {
-                handle.join().unwrap();
-            }
-        })
-        .unwrap();
+        self.for_each_entity(&|entity: &mut Entity| {
+            entity.update_movement();
+        });
 
         self.time += 1;
     }
