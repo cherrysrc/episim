@@ -6,26 +6,25 @@ use serde::{Deserialize, Serialize};
 /// This struct contains all the simulation parameters that can be serialized/deserialized.
 #[derive(Default, Serialize, Deserialize)]
 pub struct ConfigCore {
-    pub time_limit: u32,
-    pub dimensions: (u32, u32),
-    pub max_velocity: f32,
+    pub time_limit: u32,        // Maximum number of days to simulate.
+    pub dimensions: (u32, u32), // Simulation space dimensions.
+    pub max_velocity: f32,      // Maximum velocity of an entity.
 
-    pub population_size: u32,
-    pub infected_period: u32,
-    pub recovered_period: u32,
-    pub infection_radius: u32,
-    pub hospital_capacity: u32,
+    pub population_size: u32,   // Number of entities in the simulation.
+    pub infected_period: u32,   // Number of days an entity is infected.
+    pub recovered_period: u32,  // Number of days an entity is recovered.
+    pub infection_radius: u32,  // Radius of the infection area.
+    pub hospital_period: u32,   // Number of days an entity is hospitalized. If the entity is infected already, the entity will only be hospitalized for the remaining infection period.
+    pub hospital_capacity: u32, // Maximum number of entities that can be hospitalized at a given time.
 
-    pub initial_infected: f32,
-    pub initial_mobile: f32,
+    pub initial_infected: f32,  // Chance of an entity being infected at the start of the simulation.
+    pub initial_mobile: f32,    // Chance of an entity being mobile at the start of the simulation.
 
-    pub tests_per_time: u32,
-    pub test_true_positive: f32,
-    pub test_true_negative: f32,
-    pub test_false_positive: f32,
-    pub test_false_negative: f32,
+    pub tests_per_time: u32,    // Number of tests per day.
+    pub test_true_positive: f32,// Chance of a test being true positive. Implies test_false_positive = 1.0 - test_true_positive.
+    pub test_true_negative: f32,// Chance of a test being true negative. Implies test_false_negative = 1.0 - test_true_negative.
 
-    pub distancing: bool,
+    pub distancing: bool,       // Whether or not distancing is enabled.
 }
 
 impl ConfigCore {

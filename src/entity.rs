@@ -7,9 +7,14 @@ use crate::CONFIG;
 #[derive(PartialEq)]
 pub enum InfectionStatus {
     Susceptible,
-    Infected(u32), // number of days the entity will remain infected. The entity will either recover or die.
-    Recovered(u32), // number of days the entity will remain recovered (cannot be infected again). The entity will be susceptible again if this counter reaches 0.
+    Infected(u32), // time the entity will remain infected. The entity will either recover or die.
+    Recovered(u32), // time of days the entity will remain recovered (cannot be infected again). The entity will be susceptible again if this counter reaches 0.
     Dead,
+}
+
+pub enum HospitalStatus {
+    Hospitalized(u32), // time the entity will remain hospitalized. The entity will either recover or die.
+    Free,
 }
 
 pub struct Entity {
@@ -18,11 +23,10 @@ pub struct Entity {
     acceleration: Vector2<f32>,
 
     health: InfectionStatus,
-    hospitalized: bool,
+    hospitalized: HospitalStatus,
     mobile: bool, // True if the entity can move (Neither dead, nor in Hospital). False if it is immobile.
 
     age: u8,
-    survival_chance: f32, // Chance the entity will survive an infection (move to the recovered status). Based on the age of the entity.
 
     rng: StdRng,
 }
@@ -49,7 +53,7 @@ impl Entity {
 
         let age = CONFIG.sample_age(&mut rng);
 
-        let mut entity = Entity {
+        Entity {
             position: Vector2::new(x_position, y_position),
             velocity: Vector2::new(0.0, 0.0),
             acceleration: Vector2::new(0.0, 0.0),
@@ -58,20 +62,11 @@ impl Entity {
             } else {
                 InfectionStatus::Susceptible
             },
-            hospitalized: false,
+            hospitalized: HospitalStatus::Free,
             mobile,
             age,
-            survival_chance: 1.0,
             rng,
-        };
-
-        entity.calculate_survival_chance();
-
-        entity
-    }
-
-    fn calculate_survival_chance(&mut self) {
-        self.survival_chance = (CONFIG.survival_chance)(self)
+        }
     }
 
     /// Simple model for force based movement.
@@ -85,8 +80,8 @@ impl Entity {
         self.check_boundaries();
     }
 
-    // Check if the entity is outside the boundaries.
-    // Reverse the velocity if it is.
+    /// Check if the entity is outside the boundaries.
+    /// Reverse the velocity if it is.
     fn check_boundaries(&mut self) {
         if self.position.x < 0.0 {
             self.velocity.x *= -1.0;
@@ -101,25 +96,64 @@ impl Entity {
         }
     }
 
+    /// Run an infection test on this entity.
+    pub fn test(&mut self) -> bool {
+        match self.health {
+            InfectionStatus::Susceptible => {
+                let rng = self.rand();
+                rng < CONFIG.core.test_true_negative
+            },
+            InfectionStatus::Infected(_) => {
+                let rng = self.rand();
+                rng < CONFIG.core.test_true_positive
+            },
+            InfectionStatus::Recovered(_) => {
+                let rng = self.rand();
+                rng < CONFIG.core.test_true_negative
+            },
+            InfectionStatus::Dead => false,
+        }
+    }
+
     pub fn apply_force(&mut self, force: Vector2<f32>) {
         self.acceleration += force;
     }
 
     pub fn hospitalize(&mut self) {
-        self.hospitalized = true;
+        self.hospitalized = match self.health {
+            InfectionStatus::Susceptible => HospitalStatus::Hospitalized(CONFIG.core.hospital_period),
+            InfectionStatus::Infected(remaining_time) => HospitalStatus::Hospitalized(remaining_time),
+            InfectionStatus::Recovered(_) => HospitalStatus::Hospitalized(CONFIG.core.hospital_period),
+            InfectionStatus::Dead => HospitalStatus::Free,
+        };
         self.mobile = false;
     }
 
+    pub fn release(&mut self) {
+        self.hospitalized = HospitalStatus::Free;
+        self.mobile = true;
+    }
+
     pub fn is_hospitalized(&self) -> bool {
-        self.hospitalized
+        match self.hospitalized {
+            HospitalStatus::Hospitalized(_) => true,
+            _ => false,
+        }
+    }
+
+    pub fn susceptible(&mut self) {
+        self.health = InfectionStatus::Susceptible;
+        self.mobile = true;
     }
 
     pub fn recover(&mut self) {
         self.health = InfectionStatus::Recovered(CONFIG.core.recovered_period);
+        self.hospitalized = HospitalStatus::Free;
     }
 
     pub fn die(&mut self) {
         self.health = InfectionStatus::Dead;
+        self.hospitalized = HospitalStatus::Free;
     }
 
     pub fn infect(&mut self) {
@@ -148,9 +182,9 @@ impl Entity {
         match self.health {
             InfectionStatus::Infected(time_remaining) => {
                 if time_remaining <= 0 {
-                    let chance = self.rng.gen::<f32>();
+                    let chance = self.rand();
 
-                    if chance <= self.survival_chance {
+                    if chance <= (CONFIG.survival_chance)(self) {
                         self.recover();
                     } else {
                         self.die();
@@ -161,11 +195,20 @@ impl Entity {
             }
             InfectionStatus::Recovered(time_remaining) => {
                 if time_remaining <= 0 {
-                    self.health = InfectionStatus::Susceptible;
-                    self.mobile = true;
-                    self.hospitalized = false;
+                    self.susceptible();
                 } else {
                     self.health = InfectionStatus::Recovered(time_remaining - 1);
+                }
+            }
+            _ => {}
+        }
+
+        match self.hospitalized {
+            HospitalStatus::Hospitalized(time_remaining) => {
+                if time_remaining <= 0 {
+                    self.release();
+                } else {
+                    self.hospitalized = HospitalStatus::Hospitalized(time_remaining - 1);
                 }
             }
             _ => {}

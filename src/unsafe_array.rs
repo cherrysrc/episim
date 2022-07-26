@@ -1,5 +1,7 @@
 use std::cell::UnsafeCell;
 
+use rand::prelude::{StdRng, SliceRandom};
+
 pub struct UnsafeArray<T>(UnsafeCell<Vec<T>>);
 
 unsafe impl<T> Send for UnsafeArray<T> {}
@@ -33,6 +35,12 @@ impl<T> UnsafeArray<T> {
     pub fn get_at_mut(&self, index: usize) -> &mut T {
         unsafe {
             &mut (*self.0.get())[index]
+        }
+    }
+
+    pub fn len(&self) -> usize {
+        unsafe {
+            (*self.0.get()).len()
         }
     }
 }

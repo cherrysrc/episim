@@ -7,6 +7,7 @@ use rand_distr::Normal;
 mod config;
 mod graphics;
 mod entity;
+mod hospital;
 mod progress_bar;
 mod simulator;
 mod statistics;

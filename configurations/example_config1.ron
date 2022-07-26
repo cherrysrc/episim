@@ -1,12 +1,13 @@
 ConfigCore(
     time_limit: 10000,       // [ticks]
-    dimensions: (400, 400),   // [pixels]
+    dimensions: (400, 400),  // [pixels]
     max_velocity: 0.1,       // [pixels/tick]
 
-    population_size: 1200,    // [individuals]
+    population_size: 1200,   // [individuals]
     infected_period: 200,    // [ticks]
     recovered_period: 200,   // [ticks]
     infection_radius: 5,     // [pixels]
+    hospital_period: 200,    // [ticks]
     hospital_capacity: 20,   // [individuals]
     
     initial_infected: 0.01,  // [percent, chance]
@@ -15,8 +16,6 @@ ConfigCore(
     tests_per_time: 10,      // [tests/tick]
     test_true_positive: 0.9, // [percent, chance]
     test_true_negative: 0.9, // [percent, chance]
-    test_false_positive: 0.1,// [percent, chance]
-    test_false_negative: 0.1,// [percent, chance]
 
     distancing: true,        // [true/false]
 )

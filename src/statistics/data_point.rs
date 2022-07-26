@@ -5,6 +5,7 @@ pub struct DataPoint {
     timestamp: u32,
     susceptible: u32,
     infected: u32,
+    hospitalized: u32,
     recovered: u32,
     dead: u32,
 }
@@ -13,8 +14,8 @@ impl Display for DataPoint {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "[Timestamp: {}, Susceptible: {}, Infected: {}, Recovered: {}, Dead: {}]\n",
-            self.timestamp, self.susceptible, self.infected, self.recovered, self.dead
+            "[Timestamp: {}, Susceptible: {}, Infected: {}, Hospitalized: {}, Recovered: {}, Dead: {}]\n",
+            self.timestamp, self.susceptible, self.infected, self.hospitalized, self.recovered, self.dead
         )
     }
 }
@@ -24,6 +25,7 @@ impl DataPoint {
         timestamp: u32,
         susceptible: u32,
         infected: u32,
+        hospitalized: u32,
         recovered: u32,
         dead: u32,
     ) -> DataPoint {
@@ -31,6 +33,7 @@ impl DataPoint {
             timestamp,
             susceptible,
             infected,
+            hospitalized,
             recovered,
             dead,
         }
