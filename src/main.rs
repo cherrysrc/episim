@@ -5,8 +5,8 @@ use quadtree::Positioned;
 use rand_distr::Normal;
 
 mod config;
-mod graphics;
 mod entity;
+mod graphics;
 mod hospital;
 mod progress_bar;
 mod simulator;

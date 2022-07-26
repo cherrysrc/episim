@@ -4,7 +4,7 @@ use quadtree::Positioned;
 use rand::{prelude::StdRng, Rng, SeedableRng};
 use vector::Vector2;
 
-use crate::{CONFIG, hospital::Hospital};
+use crate::{hospital::Hospital, CONFIG};
 
 #[derive(PartialEq)]
 pub enum InfectionStatus {
@@ -104,15 +104,15 @@ impl Entity {
             InfectionStatus::Susceptible => {
                 let rng = self.rand();
                 rng < CONFIG.core.test_true_negative
-            },
+            }
             InfectionStatus::Infected(_) => {
                 let rng = self.rand();
                 rng < CONFIG.core.test_true_positive
-            },
+            }
             InfectionStatus::Recovered(_) => {
                 let rng = self.rand();
                 rng < CONFIG.core.test_true_negative
-            },
+            }
             InfectionStatus::Dead => false,
         }
     }
@@ -123,9 +123,15 @@ impl Entity {
 
     pub fn hospitalize(&mut self) {
         self.hospitalized = match self.health {
-            InfectionStatus::Susceptible => HospitalStatus::Hospitalized(CONFIG.core.hospital_period),
-            InfectionStatus::Infected(remaining_time) => HospitalStatus::Hospitalized(remaining_time),
-            InfectionStatus::Recovered(_) => HospitalStatus::Hospitalized(CONFIG.core.hospital_period),
+            InfectionStatus::Susceptible => {
+                HospitalStatus::Hospitalized(CONFIG.core.hospital_period)
+            }
+            InfectionStatus::Infected(remaining_time) => {
+                HospitalStatus::Hospitalized(remaining_time)
+            }
+            InfectionStatus::Recovered(_) => {
+                HospitalStatus::Hospitalized(CONFIG.core.hospital_period)
+            }
             InfectionStatus::Dead => HospitalStatus::Free,
         };
         self.mobile = false;

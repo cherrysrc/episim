@@ -1,12 +1,19 @@
-use std::{sync::{Arc, Mutex}, time::Instant};
+use std::{
+    sync::{Arc, Mutex},
+    time::Instant,
+};
 
 use crossbeam::thread;
 use quadtree::{Positioned, Quadtree, Rectangle};
-use rand::{prelude::StdRng, SeedableRng, Rng};
+use rand::{prelude::StdRng, Rng, SeedableRng};
 
 use crate::{
-    entity::{Entity, InfectionStatus}, progress_bar::print_progress, statistics::DataFrame, unsafe_array::UnsafeArray,
-    CONFIG, hospital::Hospital,
+    entity::{Entity, InfectionStatus},
+    hospital::Hospital,
+    progress_bar::print_progress,
+    statistics::DataFrame,
+    unsafe_array::UnsafeArray,
+    CONFIG,
 };
 
 pub struct Simulator {
@@ -15,7 +22,7 @@ pub struct Simulator {
 
     threads: u32,
     entities_per_thread: u32,
-    
+
     hospital: Mutex<Hospital>,
 
     delta_time: f32,
@@ -97,7 +104,7 @@ impl Simulator {
                 CONFIG.core.infection_radius as f32,
                 CONFIG.core.infection_radius as f32,
             ));
-            
+
             // Apply repulsion force, simulates distancing from other entities
             for other in range {
                 let diff = pos - *other.position();
@@ -109,14 +116,16 @@ impl Simulator {
                         if entity.rand() > (CONFIG.infection_chance)(other, entity) {
                             entity.infect();
                         }
-                    },
+                    }
                     _ => {}
                 }
             }
         });
 
         for _ in 0..CONFIG.core.tests_per_time {
-            let entity = self.population.get_at_mut(self.rng.gen_range(0..self.population.len()));
+            let entity = self
+                .population
+                .get_at_mut(self.rng.gen_range(0..self.population.len()));
             let mut hospital = self.hospital.lock().unwrap();
 
             if entity.test() && !hospital.is_full() {

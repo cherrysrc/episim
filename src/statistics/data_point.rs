@@ -38,4 +38,16 @@ impl DataPoint {
             dead,
         }
     }
+
+    pub fn as_csv(&self) -> String {
+        format!(
+            "{},{},{},{},{},{}\n",
+            self.timestamp,
+            self.susceptible,
+            self.infected,
+            self.hospitalized,
+            self.recovered,
+            self.dead
+        )
+    }
 }

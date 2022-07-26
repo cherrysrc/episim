@@ -6,7 +6,10 @@ use rusty_gl::{
 };
 
 use crate::{
-    entity::{Entity, InfectionStatus}, progress_bar::print_progress, simulator::Simulator, statistics::DataFrame,
+    entity::{Entity, InfectionStatus},
+    progress_bar::print_progress,
+    simulator::Simulator,
+    statistics::DataFrame,
     CONFIG,
 };
 
@@ -37,7 +40,7 @@ fn entity_to_vertex(entity: &Entity) -> Vertex {
 
     let mapped_x = map(pos.x, 0.0, CONFIG.core.dimensions.0 as f32, -1.0, 1.0);
     let mapped_y = map(pos.y, 0.0, CONFIG.core.dimensions.1 as f32, 1.0, -1.0);
-    
+
     Vertex::new(
         [mapped_x, mapped_y, 0.0].into(),
         health_to_color(entity.health()).into(),

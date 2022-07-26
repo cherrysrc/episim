@@ -7,13 +7,13 @@ pub struct Hospital {
 
 impl Hospital {
     pub fn new(capacity: u32) -> Hospital {
-        Hospital {
-            capacity,
-            count: 0,
-        }
+        Hospital { capacity, count: 0 }
     }
 
-    pub fn try_hospitalize(&mut self, entity: &mut Entity) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn try_hospitalize(
+        &mut self,
+        entity: &mut Entity,
+    ) -> Result<(), Box<dyn std::error::Error>> {
         if self.count < self.capacity {
             self.count += 1;
             entity.hospitalize();
