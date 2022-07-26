@@ -141,29 +141,6 @@ impl Simulator {
         self.time += 1;
     }
 
-    /// Runs the entire simulation.
-    /// Use this if you dont want/need a visalization.
-    pub fn run(&mut self, debug: bool, show_progress: bool) {
-        let mut dataframe = DataFrame::new(CONFIG.core.population_size as usize);
-        dataframe.push_data(self);
-
-        for i in 0..CONFIG.core.time_limit {
-            if show_progress {
-                let progress = i as f32 / CONFIG.core.time_limit as f32 * 100.0;
-                print_progress(progress);
-                print!("\r");
-            }
-
-            self.step();
-
-            dataframe.push_data(self);
-        }
-
-        if debug {
-            println!("{}", dataframe);
-        }
-    }
-
     pub fn done(&self) -> bool {
         self.time >= CONFIG.core.time_limit
     }
