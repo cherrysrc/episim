@@ -1,8 +1,10 @@
+use std::sync::Mutex;
+
 use quadtree::Positioned;
 use rand::{prelude::StdRng, Rng, SeedableRng};
 use vector::Vector2;
 
-use crate::CONFIG;
+use crate::{CONFIG, hospital::Hospital};
 
 #[derive(PartialEq)]
 pub enum InfectionStatus {
@@ -178,7 +180,7 @@ impl Entity {
 
     /// Performs the transition between
     /// the existing epidemic model groups.
-    pub fn update_status(&mut self) {
+    pub fn update_status(&mut self, hospital: &Mutex<Hospital>) {
         match self.health {
             InfectionStatus::Infected(time_remaining) => {
                 if time_remaining <= 0 {
@@ -206,7 +208,7 @@ impl Entity {
         match self.hospitalized {
             HospitalStatus::Hospitalized(time_remaining) => {
                 if time_remaining <= 0 {
-                    self.release();
+                    hospital.lock().unwrap().dehospitalize(self);
                 } else {
                     self.hospitalized = HospitalStatus::Hospitalized(time_remaining - 1);
                 }

@@ -44,7 +44,7 @@ impl DataFrame {
             simulator.current_time(),
             susceptible,
             infected,
-            simulator.hospital().count(),
+            simulator.hospital().lock().unwrap().count(),
             recovered,
             dead,
         ));

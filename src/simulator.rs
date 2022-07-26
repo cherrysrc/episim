@@ -1,4 +1,4 @@
-use std::{sync::Arc, time::Instant};
+use std::{sync::{Arc, Mutex}, time::Instant};
 
 use crossbeam::thread;
 use quadtree::{Positioned, Quadtree, Rectangle};
@@ -16,7 +16,7 @@ pub struct Simulator {
     threads: u32,
     entities_per_thread: u32,
     
-    hospital: Hospital,
+    hospital: Mutex<Hospital>,
 
     delta_time: f32,
     frame_timer: Instant,
@@ -37,7 +37,7 @@ impl Simulator {
             time: 0,
             threads,
             entities_per_thread,
-            hospital: Hospital::new(CONFIG.core.hospital_capacity),
+            hospital: Mutex::new(Hospital::new(CONFIG.core.hospital_capacity)),
             delta_time: 1.0,
             frame_timer: Instant::now(),
             rng: StdRng::from_entropy(),
@@ -117,16 +117,15 @@ impl Simulator {
 
         for _ in 0..CONFIG.core.tests_per_time {
             let entity = self.population.get_at_mut(self.rng.gen_range(0..self.population.len()));
-            if entity.test() && !self.hospital.is_full() {
-                match self.hospital.try_hospitalize(entity) {
-                    Ok(_) => entity.hospitalize(),
-                    Err(_) => {}
-                }
+            let mut hospital = self.hospital.lock().unwrap();
+
+            if entity.test() && !hospital.is_full() {
+                let _ = hospital.try_hospitalize(entity);
             }
         }
 
         self.for_each_entity(&|entity: &mut Entity| {
-            entity.update_status();
+            entity.update_status(&self.hospital);
             entity.update_movement();
         });
 
@@ -168,7 +167,7 @@ impl Simulator {
         &self.population
     }
 
-    pub fn hospital(&self) -> &Hospital {
+    pub fn hospital(&self) -> &Mutex<Hospital> {
         &self.hospital
     }
 }
