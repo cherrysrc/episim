@@ -10,8 +10,6 @@ use rand::{prelude::StdRng, Rng, SeedableRng};
 use crate::{
     entity::{Entity, InfectionStatus},
     hospital::Hospital,
-    progress_bar::print_progress,
-    statistics::DataFrame,
     unsafe_array::UnsafeArray,
     CONFIG,
 };

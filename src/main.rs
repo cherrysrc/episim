@@ -33,7 +33,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // let mut renderer = graphics::NoGraphics::new(simulator);
     let mut renderer = graphics::SDL::new(simulator);
 
-    renderer.run(true, true);
+    renderer.run(true, true, true);
 
     Ok(())
 }

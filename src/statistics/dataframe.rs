@@ -53,7 +53,7 @@ impl DataFrame {
     pub fn to_csv(&self) -> String {
         let mut csv = String::new();
         for datapoint in &self.datapoints {
-            csv.push_str(&format!("{}\n", datapoint.as_csv()));
+            csv.push_str(&format!("{}", datapoint.as_csv()));
         }
         csv
     }

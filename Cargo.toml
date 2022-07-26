@@ -18,3 +18,4 @@ crossbeam = "0.8.1"
 gl = "0.14.0"
 sdl2 = "0.35.1"
 rusty_gl = { path = "../rustyGL" }
+chrono = "0.4.19"

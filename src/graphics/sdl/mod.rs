@@ -1,3 +1,5 @@
+use std::io::Write;
+
 use quadtree::Positioned;
 use rusty_gl::{
     shapes::{CustomShape, Drawable},
@@ -53,7 +55,7 @@ impl Renderer for SDL {
         self.simulator = simulator;
     }
 
-    fn run(&mut self, debug: bool, show_progress: bool) {
+    fn run(&mut self, debug: bool, show_progress: bool, export: bool) {
         let sdl = sdl2::init().unwrap();
         let mut event_pump = sdl.event_pump().unwrap();
 
@@ -125,6 +127,20 @@ impl Renderer for SDL {
 
         if debug {
             println!("{}", dataframe);
+        }
+
+        if export {
+            println!("{}", std::env::current_dir().unwrap().display());
+            // Save data frame as csv file.
+            let mut file = std::fs::File::create(format!(
+                "export/{}_{}.csv",
+                CONFIG.name().split("/").last().unwrap(),
+                chrono::offset::Local::now().format("%Y-%m-%d_%H-%M-%S")
+            ))
+            .expect("Unable to create file");
+
+            file.write_all(dataframe.to_csv().as_bytes())
+                .expect("Unable to write to file");
         }
     }
 }

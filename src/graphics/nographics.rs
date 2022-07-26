@@ -1,3 +1,5 @@
+use std::io::Write;
+
 use crate::{progress_bar::print_progress, simulator::Simulator, statistics::DataFrame, CONFIG};
 
 use super::Renderer;
@@ -11,7 +13,7 @@ impl Renderer for NoGraphics {
         self.simulator = simulator;
     }
 
-    fn run(&mut self, debug: bool, show_progress: bool) {
+    fn run(&mut self, debug: bool, show_progress: bool, export: bool) {
         let mut dataframe = DataFrame::new(CONFIG.core.population_size as usize);
         dataframe.push_data(&self.simulator);
 
@@ -29,6 +31,20 @@ impl Renderer for NoGraphics {
 
         if debug {
             println!("{}", dataframe);
+        }
+
+        if export {
+            println!("{}", std::env::current_dir().unwrap().display());
+            // Save data frame as csv file.
+            let mut file = std::fs::File::create(format!(
+                "export/{}_{}.csv",
+                CONFIG.name().split("/").last().unwrap(),
+                chrono::offset::Local::now().format("%Y-%m-%d_%H-%M-%S")
+            ))
+            .expect("Unable to create file");
+
+            file.write_all(dataframe.to_csv().as_bytes())
+                .expect("Unable to write to file");
         }
     }
 }

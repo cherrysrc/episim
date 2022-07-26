@@ -6,6 +6,7 @@ use crate::entity::Entity;
 use super::core::ConfigCore;
 
 pub struct Config {
+    name: &'static str,
     pub survival_chance: fn(&Entity) -> f32, // Calculates the survival chance of an entity.
     pub infection_chance: fn(&Entity, &Entity) -> f32, // Calculates the chance entity a will infect entity b.
 
@@ -21,7 +22,7 @@ impl Config {
     /// Functions, rngs and distributions cannot be serialized and therefore have to be given explicitly.
     /// TODO lua support?
     pub fn new(
-        path: &str,
+        path: &'static str,
         survival_chance: fn(&Entity) -> f32,
         infection_chance: fn(&Entity, &Entity) -> f32,
         age_distribution: Normal<f32>,
@@ -29,6 +30,7 @@ impl Config {
         let core = ConfigCore::load(path)?;
 
         Ok(Config {
+            name: path,
             survival_chance,
             infection_chance,
             age_distribution,
@@ -40,5 +42,9 @@ impl Config {
         // Sample from the age distribution.
         let age = self.age_distribution.sample(rng);
         return age as u8;
+    }
+
+    pub fn name(&self) -> &'static str {
+        self.name
     }
 }
