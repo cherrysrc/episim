@@ -51,8 +51,8 @@ fn entity_to_vertex(entity: &Entity) -> Vertex {
 }
 
 impl Renderer for SDL {
-    fn attach(&mut self, simulator: Simulator) {
-        self.simulator = simulator;
+    fn new(simulator: Simulator) -> SDL {
+        SDL { simulator }
     }
 
     fn run(&mut self, debug: bool, show_progress: bool, export: bool) {
@@ -142,11 +142,5 @@ impl Renderer for SDL {
             file.write_all(dataframe.to_csv().as_bytes())
                 .expect("Unable to write to file");
         }
-    }
-}
-
-impl SDL {
-    pub fn new(simulator: Simulator) -> SDL {
-        SDL { simulator }
     }
 }

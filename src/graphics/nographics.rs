@@ -9,8 +9,8 @@ pub struct NoGraphics {
 }
 
 impl Renderer for NoGraphics {
-    fn attach(&mut self, simulator: Simulator) {
-        self.simulator = simulator;
+    fn new(simulator: Simulator) -> NoGraphics {
+        NoGraphics { simulator }
     }
 
     fn run(&mut self, debug: bool, show_progress: bool, export: bool) {
@@ -46,11 +46,5 @@ impl Renderer for NoGraphics {
             file.write_all(dataframe.to_csv().as_bytes())
                 .expect("Unable to write to file");
         }
-    }
-}
-
-impl NoGraphics {
-    pub fn new(simulator: Simulator) -> NoGraphics {
-        NoGraphics { simulator }
     }
 }
