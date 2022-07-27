@@ -52,6 +52,13 @@ impl DataFrame {
 
     pub fn to_csv(&self) -> String {
         let mut csv = String::new();
+        csv.push_str(
+            format!(
+                "{},{},{},{},{},{}\n",
+                "time", "susceptible", "infected", "hospital", "recovered", "dead"
+            )
+            .as_str(),
+        );
         for datapoint in &self.datapoints {
             csv.push_str(&format!("{}", datapoint.as_csv()));
         }
