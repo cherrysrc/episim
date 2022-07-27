@@ -74,6 +74,10 @@ impl Entity {
     /// Simple model for force based movement.
     /// Maximum velocity is limited to CONFIG.core.max_velocity.
     pub fn update_movement(&mut self) {
+        if !self.mobile {
+            return;
+        }
+
         self.velocity.clamp_mag(CONFIG.core.max_velocity);
         self.position += self.velocity;
         self.velocity += self.acceleration;
@@ -156,7 +160,7 @@ impl Entity {
 
     pub fn recover(&mut self) {
         self.health = InfectionStatus::Recovered(CONFIG.core.recovered_period);
-        self.hospitalized = HospitalStatus::Free;
+        self.release();
     }
 
     pub fn die(&mut self) {

@@ -141,6 +141,8 @@ impl Renderer for SDL {
 
             file.write_all(dataframe.to_csv().as_bytes())
                 .expect("Unable to write to file");
+
+            let _ = dataframe.save_as_chart();
         }
     }
 }
