@@ -1,12 +1,7 @@
 use std::fmt::Display;
 
 use plotters::{
-    backend::RGBPixel,
-    coord::types::RangedCoordu32,
-    prelude::{
-        BitMapBackend, Cartesian2d, ChartBuilder, ChartContext, IntoDrawingArea, LineSeries,
-        PathElement,
-    },
+    prelude::{BitMapBackend, ChartBuilder, IntoDrawingArea, LineSeries, PathElement},
     style::{full_palette::GREY, Color, IntoFont, BLACK, GREEN, MAGENTA, RED, WHITE},
 };
 
@@ -29,11 +24,31 @@ impl Display for DataFrame {
     }
 }
 
+/// Shortcut for adding a DataFrames datapoints to the chart more easily.
+macro_rules! add_chart_line {
+    ($chart:expr, $dataframe:expr, $attribute:tt , $color:expr) => {
+        $chart
+            .draw_series(LineSeries::new(
+                $dataframe
+                    .datapoints()
+                    .iter()
+                    .map(|dp| (dp.timestamp, dp.$attribute)),
+                $color,
+            ))?
+            .label(stringify!($attribute))
+            .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], $color));
+    };
+}
+
 impl DataFrame {
     pub fn new(size: usize) -> DataFrame {
         DataFrame {
             datapoints: Vec::with_capacity(size),
         }
+    }
+
+    pub fn datapoints(&self) -> &Vec<DataPoint> {
+        &self.datapoints
     }
 
     pub fn push_data(&mut self, simulator: &Simulator) {
@@ -99,13 +114,11 @@ impl DataFrame {
             .y_label_style(("sans-serif", 20).into_font())
             .draw()?;
 
-        // TODO write macro to shorten this code and get rid of the functions for all the members
-        // This will also make it easier to add new members to the dataframe.
-        self.draw_susceptible_line(&mut chart)?;
-        self.draw_infected_line(&mut chart)?;
-        self.draw_hospitalized_line(&mut chart)?;
-        self.draw_recovered_line(&mut chart)?;
-        self.draw_dead_line(&mut chart)?;
+        add_chart_line!(chart, self, susceptible, GREY);
+        add_chart_line!(chart, self, infected, RED);
+        add_chart_line!(chart, self, hospitalized, MAGENTA);
+        add_chart_line!(chart, self, recovered, GREEN);
+        add_chart_line!(chart, self, dead, BLACK);
 
         chart
             .configure_series_labels()
@@ -115,106 +128,6 @@ impl DataFrame {
             .draw()?;
 
         root.present()?;
-
-        Ok(())
-    }
-
-    fn draw_susceptible_line(
-        &self,
-        chart: &mut ChartContext<
-            BitMapBackend<RGBPixel>,
-            Cartesian2d<RangedCoordu32, RangedCoordu32>,
-        >,
-    ) -> Result<(), Box<dyn std::error::Error>> {
-        chart
-            .draw_series(LineSeries::new(
-                self.datapoints
-                    .iter()
-                    .map(|datapoint| (datapoint.timestamp, datapoint.susceptible)),
-                &GREY,
-            ))?
-            .label("Susceptible")
-            .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &GREY));
-
-        Ok(())
-    }
-
-    fn draw_infected_line(
-        &self,
-        chart: &mut ChartContext<
-            BitMapBackend<RGBPixel>,
-            Cartesian2d<RangedCoordu32, RangedCoordu32>,
-        >,
-    ) -> Result<(), Box<dyn std::error::Error>> {
-        chart
-            .draw_series(LineSeries::new(
-                self.datapoints
-                    .iter()
-                    .map(|datapoint| (datapoint.timestamp, datapoint.infected)),
-                &RED,
-            ))?
-            .label("Infected")
-            .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &RED));
-
-        Ok(())
-    }
-
-    fn draw_hospitalized_line(
-        &self,
-        chart: &mut ChartContext<
-            BitMapBackend<RGBPixel>,
-            Cartesian2d<RangedCoordu32, RangedCoordu32>,
-        >,
-    ) -> Result<(), Box<dyn std::error::Error>> {
-        chart
-            .draw_series(LineSeries::new(
-                self.datapoints
-                    .iter()
-                    .map(|datapoint| (datapoint.timestamp, datapoint.hospitalized)),
-                &MAGENTA,
-            ))?
-            .label("Hospitalized")
-            .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &MAGENTA));
-
-        Ok(())
-    }
-
-    fn draw_recovered_line(
-        &self,
-        chart: &mut ChartContext<
-            BitMapBackend<RGBPixel>,
-            Cartesian2d<RangedCoordu32, RangedCoordu32>,
-        >,
-    ) -> Result<(), Box<dyn std::error::Error>> {
-        chart
-            .draw_series(LineSeries::new(
-                self.datapoints
-                    .iter()
-                    .map(|datapoint| (datapoint.timestamp, datapoint.recovered)),
-                &GREEN,
-            ))?
-            .label("Recovered")
-            .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &GREEN));
-
-        Ok(())
-    }
-
-    fn draw_dead_line(
-        &self,
-        chart: &mut ChartContext<
-            BitMapBackend<RGBPixel>,
-            Cartesian2d<RangedCoordu32, RangedCoordu32>,
-        >,
-    ) -> Result<(), Box<dyn std::error::Error>> {
-        chart
-            .draw_series(LineSeries::new(
-                self.datapoints
-                    .iter()
-                    .map(|datapoint| (datapoint.timestamp, datapoint.dead)),
-                &BLACK,
-            ))?
-            .label("Dead")
-            .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &BLACK));
 
         Ok(())
     }
