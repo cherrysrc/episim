@@ -34,7 +34,6 @@ impl Renderer for NoGraphics {
         }
 
         if export {
-            println!("{}", std::env::current_dir().unwrap().display());
             // Save data frame as csv file.
             let mut file = std::fs::File::create(format!(
                 "export/{}_{}.csv",

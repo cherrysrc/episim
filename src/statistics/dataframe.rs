@@ -5,6 +5,7 @@ use plotters::{
     style::{full_palette::GREY, Color, IntoFont, BLACK, GREEN, MAGENTA, RED, WHITE},
 };
 
+use crate::entity::InfectionStatus;
 pub use crate::simulator::Simulator;
 use crate::CONFIG;
 
@@ -59,10 +60,10 @@ impl DataFrame {
 
         for entity in simulator.population().get() {
             match entity.health() {
-                crate::entity::InfectionStatus::Susceptible => susceptible += 1,
-                crate::entity::InfectionStatus::Infected(_) => infected += 1,
-                crate::entity::InfectionStatus::Recovered(_) => recovered += 1,
-                crate::entity::InfectionStatus::Dead => dead += 1,
+                InfectionStatus::Susceptible => susceptible += 1,
+                InfectionStatus::Infected(_) => infected += 1,
+                InfectionStatus::Recovered(_) => recovered += 1,
+                InfectionStatus::Dead => dead += 1,
             }
         }
 
@@ -70,7 +71,7 @@ impl DataFrame {
             simulator.current_time(),
             susceptible,
             infected,
-            simulator.hospital().lock().unwrap().count(),
+            simulator.hospital().lock().unwrap().count() as u32,
             recovered,
             dead,
         ));

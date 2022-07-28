@@ -1,10 +1,8 @@
-use std::sync::Mutex;
-
 use quadtree::Positioned;
 use rand::{prelude::StdRng, Rng, SeedableRng};
 use vector::Vector2;
 
-use crate::{hospital::Hospital, CONFIG};
+use crate::CONFIG;
 
 #[derive(PartialEq)]
 pub enum InfectionStatus {
@@ -14,18 +12,14 @@ pub enum InfectionStatus {
     Dead,
 }
 
-pub enum HospitalStatus {
-    Hospitalized(u32), // time the entity will remain hospitalized. The entity will either recover or die.
-    Free,
-}
-
 pub struct Entity {
     position: Vector2<f32>, // Used for calculating entity movement.
     velocity: Vector2<f32>,
     acceleration: Vector2<f32>,
 
     health: InfectionStatus,
-    hospitalized: HospitalStatus,
+
+    hospitalized: bool,
     mobile: bool, // True if the entity can move (Neither dead, nor in Hospital). False if it is immobile.
 
     age: u8,
@@ -64,7 +58,7 @@ impl Entity {
             } else {
                 InfectionStatus::Susceptible
             },
-            hospitalized: HospitalStatus::Free,
+            hospitalized: false,
             mobile,
             age,
             rng,
@@ -107,7 +101,7 @@ impl Entity {
         match self.health {
             InfectionStatus::Susceptible => {
                 let rng = self.rand();
-                rng < CONFIG.core.test_true_negative
+                !(rng < CONFIG.core.test_true_negative)
             }
             InfectionStatus::Infected(_) => {
                 let rng = self.rand();
@@ -115,7 +109,7 @@ impl Entity {
             }
             InfectionStatus::Recovered(_) => {
                 let rng = self.rand();
-                rng < CONFIG.core.test_true_negative
+                !(rng < CONFIG.core.test_true_negative)
             }
             InfectionStatus::Dead => false,
         }
@@ -125,34 +119,6 @@ impl Entity {
         self.acceleration += force;
     }
 
-    pub fn hospitalize(&mut self) {
-        self.hospitalized = match self.health {
-            InfectionStatus::Susceptible => {
-                HospitalStatus::Hospitalized(CONFIG.core.hospital_period)
-            }
-            InfectionStatus::Infected(remaining_time) => {
-                HospitalStatus::Hospitalized(remaining_time)
-            }
-            InfectionStatus::Recovered(_) => {
-                HospitalStatus::Hospitalized(CONFIG.core.hospital_period)
-            }
-            InfectionStatus::Dead => HospitalStatus::Free,
-        };
-        self.mobile = false;
-    }
-
-    pub fn release(&mut self) {
-        self.hospitalized = HospitalStatus::Free;
-        self.mobile = true;
-    }
-
-    pub fn is_hospitalized(&self) -> bool {
-        match self.hospitalized {
-            HospitalStatus::Hospitalized(_) => true,
-            _ => false,
-        }
-    }
-
     pub fn susceptible(&mut self) {
         self.health = InfectionStatus::Susceptible;
         self.mobile = true;
@@ -160,12 +126,24 @@ impl Entity {
 
     pub fn recover(&mut self) {
         self.health = InfectionStatus::Recovered(CONFIG.core.recovered_period);
-        self.release();
     }
 
     pub fn die(&mut self) {
         self.health = InfectionStatus::Dead;
-        self.hospitalized = HospitalStatus::Free;
+    }
+
+    pub fn is_hospitalized(&self) -> bool {
+        self.hospitalized
+    }
+
+    pub fn set_hospitalized(&mut self) {
+        self.hospitalized = true;
+        self.mobile = false;
+    }
+
+    pub fn unset_hospitalized(&mut self) {
+        self.hospitalized = false;
+        self.mobile = true;
     }
 
     pub fn infect(&mut self) {
@@ -190,7 +168,7 @@ impl Entity {
 
     /// Performs the transition between
     /// the existing epidemic model groups.
-    pub fn update_status(&mut self, hospital: &Mutex<Hospital>) {
+    pub fn update_status(&mut self) {
         match self.health {
             InfectionStatus::Infected(time_remaining) => {
                 if time_remaining <= 0 {
@@ -210,17 +188,6 @@ impl Entity {
                     self.susceptible();
                 } else {
                     self.health = InfectionStatus::Recovered(time_remaining - 1);
-                }
-            }
-            _ => {}
-        }
-
-        match self.hospitalized {
-            HospitalStatus::Hospitalized(time_remaining) => {
-                if time_remaining <= 0 {
-                    hospital.lock().unwrap().dehospitalize(self);
-                } else {
-                    self.hospitalized = HospitalStatus::Hospitalized(time_remaining - 1);
                 }
             }
             _ => {}

@@ -16,12 +16,18 @@ mod unsafe_array;
 lazy_static! {
     pub static ref CONFIG: Config = Config::new(
         "configurations/example_config1.ron",
-        |entity| { 1.0 - (entity.age() as f32 / 100.0) },
+        |entity| {
+            if entity.is_hospitalized() {
+                0.99
+            } else {
+                1.0 - (entity.age() as f32 / 100.0)
+            }
+        },
         |a, b| {
             let dist = a.position().distance(b.position());
             1.0 / dist
         },
-        Normal::new(0.0, 1.0).unwrap(),
+        Normal::new(0.5, 0.5).unwrap(),
     )
     .unwrap();
 }

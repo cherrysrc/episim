@@ -42,7 +42,7 @@ impl Simulator {
             time: 0,
             threads,
             entities_per_thread,
-            hospital: Mutex::new(Hospital::new(CONFIG.core.hospital_capacity)),
+            hospital: Mutex::new(Hospital::new(CONFIG.core.hospital_capacity as usize)),
             delta_time: 1.0,
             frame_timer: Instant::now(),
             rng: StdRng::from_entropy(),
@@ -96,26 +96,34 @@ impl Simulator {
 
         self.for_each_entity(&|entity: &mut Entity| {
             let pos = *entity.position();
-            let range = qtree.query(&Rectangle::new(
-                pos.x,
-                pos.y,
-                CONFIG.core.infection_radius as f32,
-                CONFIG.core.infection_radius as f32,
-            ));
 
-            // Apply repulsion force, simulates distancing from other entities
-            for other in range {
-                let diff = pos - *other.position();
-                entity.apply_force(diff * 0.05 * self.delta_time);
+            if !entity.is_hospitalized() {
+                let range = qtree.query(&Rectangle::new(
+                    pos.x,
+                    pos.y,
+                    CONFIG.core.infection_radius as f32,
+                    CONFIG.core.infection_radius as f32,
+                ));
 
-                // Only check if other entity is infected and entity itself is susceptible
-                match (other.status(), entity.status()) {
-                    (InfectionStatus::Infected(_), InfectionStatus::Susceptible) => {
-                        if entity.rand() > (CONFIG.infection_chance)(other, entity) {
-                            entity.infect();
+                // Apply repulsion force, simulates distancing from other entities
+                for other in range {
+                    let diff = pos - *other.position();
+                    entity.apply_force(diff * 0.05 * self.delta_time);
+
+                    // Only check if other entity is infected and entity itself is susceptible
+                    match (other.status(), entity.status()) {
+                        (InfectionStatus::Infected(_), InfectionStatus::Susceptible) => {
+                            if entity.rand() > (CONFIG.infection_chance)(other, entity) {
+                                entity.infect();
+                            }
                         }
+                        _ => {}
                     }
-                    _ => {}
+                }
+            } else {
+                let mut hospital = self.hospital.lock().unwrap();
+                if hospital.ready_to_release(entity) {
+                    hospital.release(entity);
                 }
             }
         });
@@ -126,15 +134,17 @@ impl Simulator {
                 .get_at_mut(self.rng.gen_range(0..self.population.len()));
             let mut hospital = self.hospital.lock().unwrap();
 
-            if entity.test() && !hospital.is_full() {
+            if entity.test() {
                 let _ = hospital.try_hospitalize(entity);
             }
         }
 
         self.for_each_entity(&|entity: &mut Entity| {
-            entity.update_status(&self.hospital);
+            entity.update_status();
             entity.update_movement();
         });
+
+        self.hospital.lock().unwrap().update();
 
         self.time += 1;
     }
