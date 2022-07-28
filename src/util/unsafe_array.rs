@@ -16,14 +16,6 @@ impl<T> UnsafeArray<T> {
         unsafe { &*self.0.get() }
     }
 
-    pub fn get_mut(&self) -> &mut Vec<T> {
-        unsafe { &mut *self.0.get() }
-    }
-
-    pub fn get_at(&self, index: usize) -> &T {
-        unsafe { &(*self.0.get())[index] }
-    }
-
     pub fn get_at_mut(&self, index: usize) -> &mut T {
         unsafe { &mut (*self.0.get())[index] }
     }
