@@ -1,13 +1,13 @@
 use config::Config;
-use graphics::Renderer;
 use lazy_static::lazy_static;
 use quadtree::Positioned;
 use rand_distr::Normal;
+use runner::Runner;
 
 mod config;
 mod entity;
-mod graphics;
 mod hospital;
+mod runner;
 mod simulator;
 mod statistics;
 mod util;
@@ -35,10 +35,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let simulator = simulator::Simulator::new(num_cpus::get() as u32);
 
     // If you dont need the graphics, you can use NoGraphics.
-    let mut renderer = graphics::NoGraphics::new(simulator);
+    let mut renderer = runner::NoGraphics::new(simulator);
     // let mut renderer = graphics::SDL::new(simulator);
 
-    renderer.run(true, true, true);
+    renderer.run(false, true, true);
 
     Ok(())
 }

@@ -2,13 +2,13 @@ use std::io::Write;
 
 use crate::{simulator::Simulator, statistics::DataFrame, util::print_progress, CONFIG};
 
-use super::Renderer;
+use super::Runner;
 
 pub struct NoGraphics {
     pub simulator: Simulator,
 }
 
-impl Renderer for NoGraphics {
+impl Runner for NoGraphics {
     fn new(simulator: Simulator) -> NoGraphics {
         NoGraphics { simulator }
     }

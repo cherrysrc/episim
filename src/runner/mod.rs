@@ -1,7 +1,7 @@
 mod nographics;
-mod renderer;
+mod runner;
 mod sdl;
 
 pub use nographics::NoGraphics;
-pub use renderer::Renderer;
+pub use runner::Runner;
 pub use sdl::SDL;

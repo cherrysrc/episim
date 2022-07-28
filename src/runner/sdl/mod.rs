@@ -15,7 +15,7 @@ use crate::{
     CONFIG,
 };
 
-use super::renderer::Renderer;
+use super::runner::Runner;
 
 // Function to map a health status to a color.
 fn health_to_color(health: &InfectionStatus) -> [f32; 3] {
@@ -50,7 +50,7 @@ fn entity_to_vertex(entity: &Entity) -> Vertex {
     )
 }
 
-impl Renderer for SDL {
+impl Runner for SDL {
     fn new(simulator: Simulator) -> SDL {
         SDL { simulator }
     }
