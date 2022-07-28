@@ -8,10 +8,9 @@ mod config;
 mod entity;
 mod graphics;
 mod hospital;
-mod progress_bar;
 mod simulator;
 mod statistics;
-mod unsafe_array;
+mod util;
 
 lazy_static! {
     pub static ref CONFIG: Config = Config::new(

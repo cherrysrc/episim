@@ -9,9 +9,9 @@ use rusty_gl::{
 
 use crate::{
     entity::{Entity, InfectionStatus},
-    progress_bar::print_progress,
     simulator::Simulator,
     statistics::DataFrame,
+    util::print_progress,
     CONFIG,
 };
 

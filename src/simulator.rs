@@ -10,7 +10,7 @@ use rand::{prelude::StdRng, Rng, SeedableRng};
 use crate::{
     entity::{Entity, InfectionStatus},
     hospital::Hospital,
-    unsafe_array::UnsafeArray,
+    util::UnsafeArray,
     CONFIG,
 };
 

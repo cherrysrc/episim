@@ -1,6 +1,6 @@
 use std::io::Write;
 
-use crate::{progress_bar::print_progress, simulator::Simulator, statistics::DataFrame, CONFIG};
+use crate::{simulator::Simulator, statistics::DataFrame, util::print_progress, CONFIG};
 
 use super::Renderer;
 
