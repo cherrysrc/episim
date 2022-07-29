@@ -1,6 +1,11 @@
 use std::io::Write;
 
-use crate::{simulator::Simulator, statistics::DataFrame, util::print_progress, CONFIG};
+use crate::{
+    simulator::Simulator,
+    statistics::{DataFrame, Demographics},
+    util::print_progress,
+    CONFIG,
+};
 
 use super::Runner;
 
@@ -29,8 +34,11 @@ impl Runner for NoGraphics {
             dataframe.push_data(&self.simulator);
         }
 
+        let demographics = Demographics::from_simulator(&self.simulator);
+
         if debug {
             println!("{}", dataframe);
+            println!("{}", demographics);
         }
 
         if export {

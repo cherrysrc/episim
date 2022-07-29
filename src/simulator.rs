@@ -90,11 +90,19 @@ impl Simulator {
 
         let p = self.population.clone();
         for entity in p.get() {
+            if entity.is_dead() {
+                continue;
+            }
+
             // If this fails, it means that our entity and area generation is wrong
             qtree.insert(entity).unwrap();
         }
 
         self.for_each_entity(&|entity: &mut Entity| {
+            if entity.is_dead() {
+                return;
+            }
+
             let pos = *entity.position();
 
             if !entity.is_hospitalized() {
@@ -140,6 +148,10 @@ impl Simulator {
         }
 
         self.for_each_entity(&|entity: &mut Entity| {
+            if entity.is_dead() {
+                return;
+            }
+
             entity.update_status();
             entity.update_movement();
         });

@@ -10,7 +10,7 @@ use rusty_gl::{
 use crate::{
     entity::{Entity, InfectionStatus},
     simulator::Simulator,
-    statistics::DataFrame,
+    statistics::{DataFrame, Demographics},
     util::print_progress,
     CONFIG,
 };
@@ -77,8 +77,8 @@ impl Runner for SDL {
         gl::load_with(|s| video_subsystem.gl_get_proc_address(s) as *const std::os::raw::c_void);
 
         rusty_gl::debug::enable();
-        let vertex_shader = Some(ShaderSource::File("src/graphics/sdl/vertex_shader.glsl"));
-        let fragment_shader = Some(ShaderSource::File("src/graphics/sdl/fragment_shader.glsl"));
+        let vertex_shader = Some(ShaderSource::File("src/runner/sdl/vertex_shader.glsl"));
+        let fragment_shader = Some(ShaderSource::File("src/runner/sdl/fragment_shader.glsl"));
 
         let shader_bundle = PipelineShader::create(vertex_shader, fragment_shader).unwrap();
         shader_bundle.enable();
@@ -125,8 +125,11 @@ impl Runner for SDL {
             }
         }
 
+        let demographics = Demographics::from_simulator(&self.simulator);
+
         if debug {
             println!("{}", dataframe);
+            println!("{}", demographics);
         }
 
         if export {

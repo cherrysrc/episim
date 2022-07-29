@@ -154,6 +154,10 @@ impl Entity {
         &self.health
     }
 
+    pub fn is_dead(&self) -> bool {
+        self.health == InfectionStatus::Dead
+    }
+
     pub fn age(&self) -> u8 {
         self.age
     }

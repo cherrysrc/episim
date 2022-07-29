@@ -2,7 +2,9 @@ use config::Config;
 use lazy_static::lazy_static;
 use quadtree::Positioned;
 use rand_distr::Normal;
+use runner::NoGraphics;
 use runner::Runner;
+use runner::SDL;
 
 mod config;
 mod entity;
@@ -26,7 +28,7 @@ lazy_static! {
             let dist = a.position().distance(b.position());
             1.0 / dist
         },
-        Normal::new(0.5, 0.5).unwrap(),
+        Normal::new(44.6, 3.0).unwrap(),
     )
     .unwrap();
 }
@@ -35,10 +37,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let simulator = simulator::Simulator::new(num_cpus::get() as u32);
 
     // If you dont need the graphics, you can use NoGraphics.
-    let mut renderer = runner::NoGraphics::new(simulator);
-    // let mut renderer = graphics::SDL::new(simulator);
+    // let mut renderer = NoGraphics::new(simulator);
+    let mut renderer = SDL::new(simulator);
 
-    renderer.run(false, true, true);
+    renderer.run(true, true, true);
 
     Ok(())
 }
