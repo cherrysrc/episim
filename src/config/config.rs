@@ -6,7 +6,7 @@ use crate::entity::Entity;
 use super::core::ConfigCore;
 
 pub struct Config {
-    name: &'static str,
+    name: String,
     pub survival_chance: fn(&Entity) -> f32, // Calculates the survival chance of an entity.
     pub infection_chance: fn(&Entity, &Entity) -> f32, // Calculates the chance entity a will infect entity b.
 
@@ -30,7 +30,12 @@ impl Config {
         let core = ConfigCore::load(path)?;
 
         Ok(Config {
-            name: path,
+            name: format!(
+                "{}_{}",
+                path.split("/").last().unwrap().split(".").nth(0).unwrap(),
+                chrono::offset::Local::now().format("%Y-%m-%d_%H-%M-%S")
+            )
+            .to_string(),
             survival_chance,
             infection_chance,
             age_distribution,
@@ -44,7 +49,7 @@ impl Config {
         return age as u8;
     }
 
-    pub fn name(&self) -> &'static str {
-        self.name
+    pub fn name(&self) -> &String {
+        &self.name
     }
 }

@@ -21,14 +21,14 @@ lazy_static! {
             if entity.is_hospitalized() {
                 0.99
             } else {
-                1.0 - (entity.age() as f32 / 100.0)
+                1.0 - (entity.age() as f32 / 200.0)
             }
         },
         |a, b| {
             let dist = a.position().distance(b.position());
-            1.0 / dist
+            1.0 / (dist * dist)
         },
-        Normal::new(44.6, 3.0).unwrap(),
+        Normal::new(44.6, 8.0).unwrap(),
     )
     .unwrap();
 }
@@ -37,8 +37,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let simulator = simulator::Simulator::new(num_cpus::get() as u32);
 
     // If you dont need the graphics, you can use NoGraphics.
-    // let mut renderer = NoGraphics::new(simulator);
-    let mut renderer = SDL::new(simulator);
+    let mut renderer = NoGraphics::new(simulator);
+    // let mut renderer = SDL::new(simulator);
 
     renderer.run(true, true, true);
 

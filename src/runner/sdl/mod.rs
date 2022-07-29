@@ -1,5 +1,3 @@
-use std::io::Write;
-
 use quadtree::Positioned;
 use rusty_gl::{
     shapes::{CustomShape, Drawable},
@@ -76,7 +74,10 @@ impl Runner for SDL {
 
         gl::load_with(|s| video_subsystem.gl_get_proc_address(s) as *const std::os::raw::c_void);
 
-        rusty_gl::debug::enable();
+        if debug {
+            rusty_gl::debug::enable();
+        }
+
         let vertex_shader = Some(ShaderSource::File("src/runner/sdl/vertex_shader.glsl"));
         let fragment_shader = Some(ShaderSource::File("src/runner/sdl/fragment_shader.glsl"));
 
@@ -133,18 +134,18 @@ impl Runner for SDL {
         }
 
         if export {
-            // Save data frame as csv file.
-            let mut file = std::fs::File::create(format!(
-                "export/{}_{}.csv",
-                CONFIG.name().split("/").last().unwrap(),
-                chrono::offset::Local::now().format("%Y-%m-%d_%H-%M-%S")
-            ))
-            .expect("Unable to create file");
-
-            file.write_all(dataframe.to_csv().as_bytes())
-                .expect("Unable to write to file");
-
-            let _ = dataframe.save_as_chart();
+            match std::fs::create_dir_all(format!("export/{}", CONFIG.name())) {
+                Ok(_) => {
+                    dataframe.export().expect("Failed to export dataframe.");
+                    demographics
+                        .export()
+                        .expect("Failed to export demographics.");
+                }
+                Err(e) => {
+                    println!("Failed to create export directory: {}", e);
+                    return;
+                }
+            }
         }
     }
 }

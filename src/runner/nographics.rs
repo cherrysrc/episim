@@ -1,5 +1,3 @@
-use std::io::Write;
-
 use crate::{
     simulator::Simulator,
     statistics::{DataFrame, Demographics},
@@ -42,18 +40,18 @@ impl Runner for NoGraphics {
         }
 
         if export {
-            // Save data frame as csv file.
-            let mut file = std::fs::File::create(format!(
-                "export/{}_{}.csv",
-                CONFIG.name().split("/").last().unwrap(),
-                chrono::offset::Local::now().format("%Y-%m-%d_%H-%M-%S")
-            ))
-            .expect("Unable to create file");
-
-            file.write_all(dataframe.to_csv().as_bytes())
-                .expect("Unable to write to file");
-
-            let _ = dataframe.save_as_chart();
+            match std::fs::create_dir_all(format!("export/{}", CONFIG.name())) {
+                Ok(_) => {
+                    dataframe.export().expect("Failed to export dataframe.");
+                    demographics
+                        .export()
+                        .expect("Failed to export demographics.");
+                }
+                Err(e) => {
+                    println!("Failed to create export directory: {}", e);
+                    return;
+                }
+            }
         }
     }
 }

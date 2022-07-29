@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{fmt::Display, io::Write};
 
 use plotters::{
     prelude::{BitMapBackend, ChartBuilder, IntoDrawingArea, LineSeries, PathElement},
@@ -77,7 +77,7 @@ impl DataFrame {
         ));
     }
 
-    pub fn to_csv(&self) -> String {
+    fn save_as_csv(&self) -> Result<(), Box<dyn std::error::Error>> {
         let mut csv = String::new();
         csv.push_str(
             format!(
@@ -86,18 +86,20 @@ impl DataFrame {
             )
             .as_str(),
         );
+
         for datapoint in &self.datapoints {
             csv.push_str(&format!("{}", datapoint.as_csv()));
         }
-        csv
+
+        let mut file = std::fs::File::create(format!("export/{}/data.csv", CONFIG.name()))?;
+
+        file.write_all(csv.as_bytes())?;
+
+        Ok(())
     }
 
-    pub fn save_as_chart(&self) -> Result<(), Box<dyn std::error::Error>> {
-        let filename = format!(
-            "export/{}_{}.png",
-            CONFIG.name().split("/").last().unwrap(),
-            chrono::offset::Local::now().format("%Y-%m-%d_%H-%M-%S")
-        );
+    fn save_as_chart(&self) -> Result<(), Box<dyn std::error::Error>> {
+        let filename = format!("export/{}/trend.png", CONFIG.name());
 
         let root = BitMapBackend::new(&filename, (1000, 1000)).into_drawing_area();
         root.fill(&WHITE)?;
@@ -129,6 +131,13 @@ impl DataFrame {
             .draw()?;
 
         root.present()?;
+
+        Ok(())
+    }
+
+    pub fn export(&self) -> Result<(), Box<dyn std::error::Error>> {
+        self.save_as_csv()?;
+        self.save_as_chart()?;
 
         Ok(())
     }

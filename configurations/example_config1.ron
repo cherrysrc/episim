@@ -11,11 +11,11 @@ ConfigCore(
     hospital_capacity: 500,   // [individuals]
     
     initial_infected: 0.02,  // [percent, chance]
-    initial_mobile: 0.5,    // [percent, chance]
+    initial_mobile: 0.95,    // [percent, chance]
 
     tests_per_time: 10,         // [tests/tick]
-    test_true_positive: 0.9999, // [percent, chance]
-    test_true_negative: 0.9999, // [percent, chance]
+    test_true_positive: 0.999, // [percent, chance]
+    test_true_negative: 0.999, // [percent, chance]
 
     distancing: true,          // [true/false]
 )
