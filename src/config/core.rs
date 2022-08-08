@@ -28,8 +28,8 @@ pub struct ConfigCore {
 }
 
 impl ConfigCore {
-    pub fn load(path: &str) -> Result<ConfigCore, Box<dyn std::error::Error>> {
-        let mut file = File::open(path)?;
+    pub fn load(name: &str) -> Result<ConfigCore, Box<dyn std::error::Error>> {
+        let mut file = File::open(format!("./configurations/{}/core.cfg", name))?;
         let mut contents = String::new();
         file.read_to_string(&mut contents)?;
 

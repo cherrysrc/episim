@@ -2,8 +2,7 @@ use std::fmt::Display;
 
 use plotters::{
     prelude::{
-        BitMapBackend, ChartBuilder, Histogram, IntoDrawingArea, IntoSegmentedCoord, Rectangle,
-        SegmentValue,
+        BitMapBackend, ChartBuilder, IntoDrawingArea, IntoSegmentedCoord, Rectangle, SegmentValue,
     },
     style::{Color, IntoFont, RED, WHITE},
 };

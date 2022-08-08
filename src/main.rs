@@ -1,7 +1,6 @@
 use config::Config;
 use lazy_static::lazy_static;
 use quadtree::Positioned;
-use rand_distr::Normal;
 use runner::NoGraphics;
 use runner::Runner;
 use runner::SDL;
@@ -16,7 +15,7 @@ mod util;
 
 lazy_static! {
     pub static ref CONFIG: Config = Config::new(
-        "configurations/example_config1.ron",
+        "example_conf",
         |entity| {
             if entity.is_hospitalized() {
                 0.99
@@ -28,7 +27,6 @@ lazy_static! {
             let dist = a.position().distance(b.position());
             1.0 / (dist * dist)
         },
-        Normal::new(44.6, 8.0).unwrap(),
     )
     .unwrap();
 }
