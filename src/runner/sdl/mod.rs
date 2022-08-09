@@ -140,6 +140,7 @@ impl Runner for SDL {
                     demographics
                         .export()
                         .expect("Failed to export demographics.");
+                    CONFIG.core.export().expect("Failed to export core config.");
                 }
                 Err(e) => {
                     println!("Failed to create export directory: {}", e);

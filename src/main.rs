@@ -25,7 +25,7 @@ lazy_static! {
         },
         |a, b| {
             let dist = a.position().distance(b.position());
-            1.0 / (dist * dist)
+            1.0 / (dist * dist * dist * dist)
         },
     )
     .unwrap();

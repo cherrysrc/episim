@@ -49,9 +49,14 @@ impl Entity {
 
         let age = CONFIG.sample_age(&mut rng);
 
+        let speed_range = (-CONFIG.core.max_velocity * 0.1)..(CONFIG.core.max_velocity * 0.1);
+
         Entity {
             position: Vector2::new(x_position, y_position),
-            velocity: Vector2::new(0.0, 0.0),
+            velocity: Vector2::new(
+                rng.gen_range(speed_range.clone()),
+                rng.gen_range(speed_range),
+            ),
             acceleration: Vector2::new(0.0, 0.0),
             health: if infected {
                 InfectionStatus::Infected(CONFIG.core.infected_period)

@@ -1,7 +1,16 @@
-use std::{fs::File, io::Read};
+use std::{
+    fs::File,
+    io::{Read, Write},
+};
 
-use ron::de::from_str;
+use ron::{
+    de::from_str,
+    ser::{to_string_pretty, PrettyConfig},
+    to_string,
+};
 use serde::{Deserialize, Serialize};
+
+use crate::CONFIG;
 
 /// This struct contains all the simulation parameters that can be serialized/deserialized.
 #[derive(Default, Serialize, Deserialize)]
@@ -33,11 +42,14 @@ impl ConfigCore {
         let mut contents = String::new();
         file.read_to_string(&mut contents)?;
 
-        let config = match from_str::<ConfigCore>(&contents) {
-            Ok(cfg) => cfg,
-            Err(e) => return Err(e)?,
-        };
+        let config = from_str::<ConfigCore>(&contents)?;
 
         Ok(config)
+    }
+
+    pub fn export(&self) -> Result<(), Box<dyn std::error::Error>> {
+        let mut file = File::create(format!("./export/{}/core.cfg", CONFIG.name()))?;
+        file.write_all(to_string_pretty(&self, PrettyConfig::new())?.as_bytes())?;
+        Ok(())
     }
 }

@@ -23,7 +23,6 @@ impl AgeDistribution {
 
             intervals.push((lower_bound, upper_bound));
         }
-        println!("{:?}", intervals);
 
         Ok(AgeDistribution { intervals })
     }
