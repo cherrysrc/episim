@@ -15,7 +15,7 @@ mod util;
 
 lazy_static! {
     pub static ref CONFIG: Config = Config::new(
-        "example_conf",
+        "other_example_conf",
         |entity| {
             if entity.is_hospitalized() {
                 0.99
