@@ -5,6 +5,12 @@ pub struct AgePDF {
 }
 
 impl AgePDF {
+    /// Load a distribution from a file.
+    /// Creates a pdf from the csv files absolute population numbers.
+    /// Ignores male/female for now as the simulator ignores it as well.
+    /// populationpyramid.net csv files use intervals such as 0-4, 5-9 etc.
+    /// This function unravels these intervals, evenly dividing them.
+    /// Treats 100+ as just a single bucket of 100 year olds.
     pub fn load(ages_csv: String) -> Result<AgePDF, Box<dyn std::error::Error>> {
         let mut age_chances = [0.0; 101];
         let mut lines = ages_csv.lines();

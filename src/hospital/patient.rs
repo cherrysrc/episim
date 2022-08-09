@@ -1,3 +1,5 @@
+/// Struct representing a patient enlisted in the hospital
+/// Uses raw pointers converted to usize to identify the entity.
 pub struct Patient {
     pub(super) entity_id: usize,
     pub(super) time_to_recover: u32,

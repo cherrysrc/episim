@@ -15,7 +15,7 @@ use crate::{
 
 use super::runner::Runner;
 
-// Function to map a health status to a color.
+/// Function to map a health status to a color.
 fn health_to_color(health: &InfectionStatus) -> [f32; 3] {
     match health {
         InfectionStatus::Susceptible => [1.0, 1.0, 1.0],

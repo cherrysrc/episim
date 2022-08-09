@@ -4,8 +4,6 @@ use crate::entity::Entity;
 
 use super::{age_distribution::AgeDistribution, core::ConfigCore};
 
-//https://www.populationpyramid.net/
-
 pub struct Config {
     name: String,
     pub survival_chance: fn(&Entity) -> f32, // Calculates the survival chance of an entity.

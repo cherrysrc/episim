@@ -39,7 +39,6 @@ impl Demographics {
             demographics.add(entity.age());
         }
 
-        // Sort by bucket age
         demographics.buckets.sort_by(|a, b| a.age.cmp(&b.age));
 
         demographics

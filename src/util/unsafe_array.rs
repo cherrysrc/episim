@@ -1,5 +1,7 @@
 use std::cell::UnsafeCell;
 
+/// UnsafeArray is used to calm the compiler as it cannot see
+/// that the concurrent accesses by multiple threads are in distinct areas.
 pub struct UnsafeArray<T>(UnsafeCell<Vec<T>>);
 
 unsafe impl<T> Send for UnsafeArray<T> {}
