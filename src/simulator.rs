@@ -59,7 +59,13 @@ impl Simulator {
 
                 let handle = scope.spawn(move |_| {
                     let start_index = thread_index * self.entities_per_thread;
-                    let end_index = (thread_index + 1) * self.entities_per_thread;
+                    let end_index = (thread_index + 1) * self.entities_per_thread
+                        + if thread_index == self.threads - 1 {
+                            // If the population size isnt evenly divisible by the number of threads, the last thread will have a bigger chunk
+                            CONFIG.core.population_size % self.threads
+                        } else {
+                            0
+                        };
 
                     for i in start_index..end_index {
                         f(population.get_at_mut(i as usize));
