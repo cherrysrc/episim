@@ -1,9 +1,5 @@
 use quadtree::Positioned;
-use rusty_gl::{
-    shapes::{CustomShape, Drawable},
-    vertices::Vertex,
-    PipelineShader, ShaderSource,
-};
+use rusty_gl::{color, shapes::CustomShape2D, vertices::Vertex};
 
 use crate::{
     entity::{Entity, InfectionStatus},
@@ -21,7 +17,7 @@ fn health_to_color(health: &InfectionStatus) -> [f32; 3] {
         InfectionStatus::Susceptible => [1.0, 1.0, 1.0],
         InfectionStatus::Infected(_) => [1.0, 0.0, 0.0],
         InfectionStatus::Recovered(_) => [0.0, 1.0, 0.0],
-        InfectionStatus::Dead => [0.1, 0.1, 0.1],
+        InfectionStatus::Dead => [0.25, 0.25, 0.25],
     }
 }
 
@@ -30,19 +26,11 @@ pub struct SDL {
     pub simulator: Simulator,
 }
 
-// TODO implement this remap functionality in the rustyGL crate
-fn map(x: f32, in_min: f32, in_max: f32, out_min: f32, out_max: f32) -> f32 {
-    (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
-}
-
 fn entity_to_vertex(entity: &Entity) -> Vertex {
     let pos = entity.position();
 
-    let mapped_x = map(pos.x, 0.0, CONFIG.core.dimensions.0 as f32, -1.0, 1.0);
-    let mapped_y = map(pos.y, 0.0, CONFIG.core.dimensions.1 as f32, 1.0, -1.0);
-
     Vertex::new(
-        [mapped_x, mapped_y, 0.0].into(),
+        [pos.x, pos.y, 0.0].into(),
         health_to_color(entity.health()).into(),
         [0.0, 0.0].into(),
     )
@@ -63,26 +51,15 @@ impl Runner for SDL {
         gl_attrib.set_context_profile(sdl2::video::GLProfile::Core);
         gl_attrib.set_context_version(4, 5);
 
-        let dimensions = CONFIG.core.dimensions;
-        let window = video_subsystem
-            .window("Simulator", dimensions.0, dimensions.1)
-            .opengl()
-            .resizable()
-            .build()
+        let window = rusty_gl::Window::new()
+            .dimensions(CONFIG.core.dimensions.0, CONFIG.core.dimensions.1)
+            .title("Episim")
+            .build(&video_subsystem)
             .unwrap();
-        let _gl_context = window.gl_create_context().unwrap();
-
-        gl::load_with(|s| video_subsystem.gl_get_proc_address(s) as *const std::os::raw::c_void);
 
         if debug {
             rusty_gl::debug::enable();
         }
-
-        let vertex_shader = Some(ShaderSource::File("src/runner/sdl/vertex_shader.glsl"));
-        let fragment_shader = Some(ShaderSource::File("src/runner/sdl/fragment_shader.glsl"));
-
-        let shader_bundle = PipelineShader::create(vertex_shader, fragment_shader).unwrap();
-        shader_bundle.enable();
 
         let mut dataframe = DataFrame::new(CONFIG.core.population_size as usize);
         dataframe.push_data(&self.simulator);
@@ -102,10 +79,7 @@ impl Runner for SDL {
                 print!("\r");
             }
 
-            unsafe {
-                gl::ClearColor(0.0, 0.0, 0.0, 1.0);
-                gl::Clear(gl::COLOR_BUFFER_BIT);
-            }
+            window.clear(color::BLACK);
 
             self.simulator.step();
 
@@ -115,11 +89,11 @@ impl Runner for SDL {
                 vertices.push(vertex);
             }
 
-            let shape = CustomShape::new(vertices, gl::POINTS, None, None, None);
-            shape.draw();
+            let shape = CustomShape2D::new(vertices, gl::POINTS);
+            window.draw(&shape);
 
             dataframe.push_data(&self.simulator);
-            window.gl_swap_window();
+            window.gl_swap();
 
             if self.simulator.done() {
                 break 'main;
