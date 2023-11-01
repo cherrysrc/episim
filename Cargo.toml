@@ -6,8 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-quadtree = { git = "https://github.com/jerrit200/quadtree-rs.git" }
-vector = { git = "https://github.com/jerrit200/vector-rs.git" }
+quadtree = { git = "https://github.com/jerr-it/quadtree-rs.git" }
+vector = { git = "https://github.com/jerr-it/vector-rs.git" }
 rand = { version = "0.8.5", features = ["std_rng"] }
 rand_distr = "0.4.3"
 num_cpus = "1.13.1"
@@ -17,6 +17,6 @@ lazy_static = "1.4.0"
 crossbeam = "0.8.1"
 gl = "0.14.0"
 sdl2 = "0.35.1"
-rusty_gl = { git = "https://github.com/jerrit200/rustyGL.git" }
+rusty_gl = { git = "https://github.com/jerr-it/rustyGL.git" }
 chrono = "0.4.19"
 plotters = "0.3.2"
